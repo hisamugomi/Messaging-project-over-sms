@@ -1,10 +1,18 @@
 from twilio.rest import Client
 import os
-import csv
+import json
 from datetime import datetime, timedelta
 from dotenv import load_dotenv 
 
-# import appointmentlist.csv 
+
+"""First ask what it wants to do"""
+# 0 Ask name and email if first time.
+# Show menu
+# 1 Add appnt
+# 2 Show appnt
+# 3 Cancel appnt
+# 
+# Other features like send appointment reminders 1 day before...
 
 load_dotenv()
 
@@ -29,14 +37,25 @@ def send_smsreminder(to_number, message_body):
 
 appointments = []
 
-with open('appointmentlist.csv', mode='r') as csv_file:
-    csv_reader = csv.DictReader(csv_file)
-    for row in csv_reader:
-        appointments.append(row)
 
-for appointment in appointments:
+def applist_send():
+    with open('appointmentlist.json', 'r') as json_file:
+        json_reader = json.load(json_file)
+        for row in json_reader:
+            appointments.append(row)
 
-    
+    for appointment in appointments:
 
-    body = f'Hello, {appointment['name']}, Your appointment at dental B is on {appointment['appointment_date_str']}'
-    send_smsreminder(appointment['phone'], body)
+        
+
+        body = f'Hello, {appointment['name']}, Your appointment at dental B is on {appointment['appointment_date_str']}'
+        send_smsreminder(appointment['phone'], body)
+
+def applist_add():
+    with open('appointmentlist.json', 'r') as json_file:
+        json_reader = json.load(json_file)
+      
+def apptlist_del():
+    with open('appointmentlist.json', 'r') as json_file:
+        json_reader = json.load(json_file)
+        
