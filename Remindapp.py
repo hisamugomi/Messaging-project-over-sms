@@ -1,4 +1,5 @@
 from twilio.rest import Client
+from twilio.twiml.messaging_response import MessagingResponse
 import os
 import json
 from datetime import datetime, timedelta
@@ -77,7 +78,26 @@ def apptlist_del():
     with open('appointmentlist.json', 'r') as json_file:
         json_reader = json.load(json_file)
 
-def get_ai_intent(user_input):
+def get_ai_response(user_input):
+
+    """Sends a message to AI and returns response."""
+    try:
+        response = model.generate_content(user_input)
+        return response.text
+    except Exception as e:
+         return f"An error occured: {e}"
+
+def get_ai_intent_reg(user_input):
+    prompt = f"""
+    You are a friendly appointment manager chatbot. You first need to ask the customer if they have an account with us, 
+    The user's response is: "{user_input}"
+    
+    Based on the request, respond with only one of the following words: "add", "show", "cancel", "remind", or "other".
+    """
+    return get_ai_response(prompt).strip().lower()
+
+
+def get_ai_intent_menu(user_input):
     prompt = f"""
     You are a friendly appointment manager chatbot. Your goal is to help the user with their appointments.
     The user's request is: "{user_input}"
@@ -86,22 +106,49 @@ def get_ai_intent(user_input):
     """
     return get_ai_response(prompt).strip().lower()
 
+# def main_menu(ai_intent):
+#     if ai_intent == 'add':
+#         twilio_response.message("Okay, let's add a new appointment. What date and time?")
+#     elif ai_intent == 'show':
+#         twilio_response.message("Here are your upcoming appointments")
+#         applist_send()
+#     elif ai_intent == 'cancel':
+#         twilio_response.message("Which appointment would you like to cancel?")
+#     else:
+#         twilio_response.message("I'm sorry I didn't understand that.")
+        
+#     return str(twilio_response)
+         
 
 @app.route("/sms", methods = ['POST'])
 def sms_reply():
+
+    twilio_response.message("Hello, first, we will start by creating an account. Do you have an account?")
+
     message_body = request.values.get('Body', '')
     from_number = request.values.get('From', '')
 
     print(f"received message from {from_number}: {message_body}")
 
-    ai_intent = get_ai_intent(message_body)
 
-    if message_body == "Show" :
+
+    twilio_response = MessagingResponse()
+
+    ai_intent = get_ai_intent_menu(message_body)
+    # main_menu(ai_intent)
+
+    if ai_intent == 'add':
+        applist_add
+        twilio_response.message("Okay, let's add a new appointment. What date and time?")
+    elif ai_intent == 'show':
+        twilio_response.message("Here are your upcoming appointments")
         applist_send()
-    else: print("What going on")
-    return "", 200
+    elif ai_intent == 'cancel':
+        twilio_response.message("Which appointment would you like to cancel?")
+    else:
+        twilio_response.message("I'm sorry I didn't understand that.")
+    return str(twilio_response)
 
-main_menu()
 
 if __name__ == "__main__":
     app.run(debug=True)
