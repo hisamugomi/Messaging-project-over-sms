@@ -122,6 +122,7 @@ def get_ai_intent_menu(user_input):
 
 @app.route("/sms", methods = ['POST'])
 def sms_reply():
+    twilio_response = MessagingResponse()
 
     twilio_response.message("Hello, first, we will start by creating an account. Do you have an account?")
 
@@ -132,7 +133,6 @@ def sms_reply():
 
 
 
-    twilio_response = MessagingResponse()
 
     ai_intent = get_ai_intent_menu(message_body)
     # main_menu(ai_intent)
