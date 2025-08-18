@@ -66,19 +66,7 @@ def applist_send():
         body = f"Hello, {appointment['name']}, Your appointment at dental B is on {appointment['appointments']}"
         send_smsreminder(appointment['phone'], body)
 
-@app.route("/sms", methods = ['POST'])
-def sms_reply():
-    message_body = request.values.get('Body', '')
-    from_number = request.values.get('From', '')
 
-    print(f"received message from {from_number}: {message_body}")
-
-    if message_body == "Show" :
-        applist_send()
-    else: print("What going on")
-
-
-    return "", 200
 
 
 def applist_add():
@@ -89,46 +77,31 @@ def apptlist_del():
     with open('appointmentlist.json', 'r') as json_file:
         json_reader = json.load(json_file)
 
-def get_ai_response(user_input):
-    """Sends a message to AI and returns response."""
-    try:
-        response = model.generate_content(user_input)
-        return response.text
-    except Exception as e:
-        return f"An error occured: {e}"
+def get_ai_intent(user_input):
+    prompt = f"""
+    You are a friendly appointment manager chatbot. Your goal is to help the user with their appointments.
+    The user's request is: "{user_input}"
     
-ai_message = get_ai_response("Hello, How can I buy a tesla?")
+    Based on the request, respond with only one of the following words: "add", "show", "cancel", "remind", or "other".
+    """
+    return get_ai_response(prompt).strip().lower()
 
 
+@app.route("/sms", methods = ['POST'])
+def sms_reply():
+    message_body = request.values.get('Body', '')
+    from_number = request.values.get('From', '')
 
-# def main_menu():
-#     while True:
-#         user_input = input("\nHow can I help you today? (Type 'Exit to quit')")
-#         if user_input.lower() == 'exit':
-#             print('goodbye')
-#             break
-#         prompt = f"""
-# You are a friendly appointment manager chatbot. Your goal is to help the user with their appointments.
-# The user's request is: "{user_input}"
+    print(f"received message from {from_number}: {message_body}")
 
-# Based on the request, respond in one of the following ways:
-# - If the user wants to add an appointment, say "add" and ask for the date and time.
-# - If the user wants to see appointments, say "show" and list the upcoming appointments.
-# - If the user wants to cancel an appointment, say "cancel" and ask which one to cancel.
-# - If the user is asking for a reminder, say "remind" and confirm that you will send a reminder.
-# - If the user's request is unclear, respond with a friendly message asking for clarification.
-# """
-        
-#         ai_intent = get_ai_response(prompt).strip().lower()
+    ai_intent = get_ai_intent(message_body)
 
-#         if ai_intent == 'add':
-#             print("Okay lets add a new appointment")
+    if message_body == "Show" :
+        applist_send()
+    else: print("What going on")
+    return "", 200
 
-
-# response = MessagingResponse()
-# response.message(f"You said: {user_input}")
-# return str(response)
-
+main_menu()
 
 if __name__ == "__main__":
     app.run(debug=True)
